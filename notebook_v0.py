@@ -10,16 +10,18 @@ import base64
 import io
 import json
 import pprint
+from pathlib import Path
 
 # Third-Party Libraries
 import numpy as np
 import PIL.Image  # pillow
+#Path =  '/Users/utilisateur/.vscode/extensions/ms-python.python-2021.12.1559732655/pythonFiles/lib/python/debugpy/launcher 55717 -- /Users/utilisateur/Documents/GitHub/python-advanced-evaluation-groupe5/'
 
 
 def load_ipynb(filename):
     r"""
     Load a jupyter notebook .ipynb file (JSON) as a Python dict.
-
+@
     Usage:
 
         >>> ipynb = load_ipynb("samples/minimal.ipynb")
@@ -50,8 +52,9 @@ def load_ipynb(filename):
          'nbformat': 4,
          'nbformat_minor': 5}
     """
-    pass
-
+    f = open(filename)
+    json_file = json.load(f)
+    return(json_file)
 
 def save_ipynb(ipynb, filename):
     r"""
@@ -73,7 +76,9 @@ def save_ipynb(ipynb, filename):
         True
 
     """
-    pass
+
+    f = open(filename,'w')
+    return(json.dump(ipynb,f))
 
 
 def get_format_version(ipynb):
@@ -90,7 +95,8 @@ def get_format_version(ipynb):
         >>> get_format_version(ipynb)
         '4.5'
     """
-    pass
+    
+    return(f"{ipynb['nbformat']}.{ipynb['nbformat_minor']}")
 
 
 def get_metadata(ipynb):
@@ -114,7 +120,7 @@ def get_metadata(ipynb):
                            'pygments_lexer': 'ipython3',
                            'version': '3.9.7'}}
     """
-    pass
+    return(ipynb['metadata'])
 
 
 def get_cells(ipynb):
@@ -148,7 +154,7 @@ def get_cells(ipynb):
           'metadata': {},
           'source': ['Goodbye! 👋']}]
     """
-    pass
+    return(ipynb['cells'])
 
 
 def to_percent(ipynb):
@@ -175,7 +181,28 @@ def to_percent(ipynb):
         ...     with open(notebook_file.with_suffix(".py"), "w", encoding="utf-8") as output:
         ...         print(percent_code, file=output)
     """
-    pass
+    cells = get_cells(ipynb)
+    L = r""""""
+    for cell in cells:
+        if cell['cell_type'] != 'code' :
+            L = L + f"""# %% [{cell['cell_type']}]
+"""
+            for line in cell['source']:
+                l = ''
+                for elt in line:
+                    l = l+elt
+                L = L + f"""# {l}"""
+        else :
+            L = L + f"""# %% 
+"""
+            for line in cell['source']:
+                l = ''
+                for elt in line:
+                    l = l+elt
+                L = L + f"""{l}"""
+        L = L + f"""\n"""
+    return(L)
+        
 
 
 def starboard_html(code):
@@ -232,7 +259,30 @@ def to_starboard(ipynb, html=False):
         ...     with open(notebook_file.with_suffix(".html"), "w", encoding="utf-8") as output:
         ...         print(starboard_html, file=output)
     """
-    pass
+    
+    
+    cells = get_cells(ipynb)
+    L = f""""""
+    for cell in cells:
+        if cell['cell_type'] != 'code' :
+            L = L + f"""# %% [{cell['cell_type']}]\n"""
+        else :
+            L = L + f"""# %% [python]\n"""
+        for line in cell['source']:
+            
+            l = ''
+            for elt in line:
+                l = l+elt
+            L = L + f"""{l}"""
+        L = L +"""\n"""
+    L = L[:-1]
+        
+    if html:
+        return(starboard_html(repr(L)[1:-1]))
+    else:
+        return(L)
+        
+        
 
 
 # Outputs
@@ -288,7 +338,12 @@ def clear_outputs(ipynb):
          'nbformat': 4,
          'nbformat_minor': 5}
     """
-    pass
+    for cell in get_cells(ipynb):
+        if 'outputs' in cell.keys():
+            cell['outputs'] = []
+        if 'execution_count' in cell.keys():
+            cell['execution_count'] = None
+    
 
 
 def get_stream(ipynb, stdout=True, stderr=False):
@@ -306,7 +361,17 @@ def get_stream(ipynb, stdout=True, stderr=False):
         👋 Hello world! 🌍
         🔥 This is fine. 🔥 (https://gunshowcomic.com/648)
     """
-    pass
+    cells = get_cells(ipynb)
+    L = r""""""
+    for cell in cells:
+        for output in cell['outputs']:
+            if output['output_type'] == 'stream' and (output['name'] == 'stdout' and stdout == True) :
+                L = L + output['text'][0]
+            if output['output_type'] == 'stream' and (output['name'] == 'stderr' and stderr == True):
+                L = L +output['text'][0]
+
+    return(L)
+
 
 
 def get_exceptions(ipynb):
