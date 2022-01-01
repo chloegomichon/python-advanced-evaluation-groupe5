@@ -4,6 +4,33 @@
 """
 an object-oriented version of the notebook toolbox
 """
+from json import load
+from notebook_v0 import *
+
+def clean_cells(ipynb):
+    '''enlève metadata et outputs, renvoie liste des cells'''
+    cells = get_cells(ipynb)
+    C = []
+    for cell in cells:
+        clean = dict()
+        for key in cell.keys():
+            if key != 'metadata' and key!='outputs':
+                clean[key]=cell[key]
+        C.append(clean)
+    return(C)
+
+def cells_conv(ipynb):
+    '''convertit avec les classes crées'''
+    C = []
+    for cell in clean_cells(ipynb):
+        if cell['cell_type'] == 'markdown':
+            C.append(MarkdownCell(cell))
+        if cell['cell_type'] == 'code':
+            C.append(CodeCell(cell))
+    return(C)
+
+
+
 
 class CodeCell:
     r"""A Cell of Python code in a Jupyter notebook.
@@ -33,7 +60,10 @@ class CodeCell:
     """
 
     def __init__(self, ipynb):
-        pass
+        self.id = ipynb["id"]
+        self.source = ipynb['source']
+        self.execution_count = ipynb["execution_count"]
+
 
 class MarkdownCell:
     r"""A Cell of Markdown markup in a Jupyter notebook.
@@ -63,7 +93,9 @@ class MarkdownCell:
     """
 
     def __init__(self, ipynb):
-        pass
+        self.id = ipynb["id"]
+        self.source = ipynb["source"]
+
 
 class Notebook:
     r"""A Jupyter Notebook.
@@ -95,7 +127,8 @@ class Notebook:
     """
 
     def __init__(self, ipynb):
-        pass
+        self.version = get_format_version(ipynb)
+        self.cells = cells_conv(ipynb)
 
     @staticmethod
     def from_file(filename):
@@ -107,7 +140,7 @@ class Notebook:
             >>> nb.version
             '4.5'
         """
-        pass
+        return(Notebook(load_ipynb(filename)))
 
     def __iter__(self):
         r"""Iterate the cells of the notebook.

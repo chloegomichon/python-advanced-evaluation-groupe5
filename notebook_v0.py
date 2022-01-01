@@ -282,9 +282,7 @@ def to_starboard(ipynb, html=False):
     else:
         return(L)
         
-        
-
-
+    
 # Outputs
 # ------------------------------------------------------------------------------
 def clear_outputs(ipynb):
@@ -393,7 +391,19 @@ def get_exceptions(ipynb):
         TypeError("unsupported operand type(s) for +: 'int' and 'str'")
         Warning('🌧️  light rain')
     """
-    pass
+    errors = []
+    cells = get_cells(ipynb)
+    for cell in cells:
+        if cell['cell_type'] == 'code':
+            code = cell['source'][0]
+            
+            try:
+                exec(code)
+                
+            except BaseException as err:
+                
+                errors.append(err)
+    return(errors)
 
 
 def get_images(ipynb):
@@ -417,4 +427,18 @@ def get_images(ipynb):
                 ...,
                 [ 14,  13,  19]]], dtype=uint8)
     """
-    pass
+    im = []
+    cells = get_cells(ipynb)
+    for cell in cells:
+        if 'outputs' in cell.keys():
+            for output in cell['outputs']:
+                
+                if 'data' in output.keys():
+                    
+                    if 'image/png' in output['data'].keys():
+                        img_string = output['data']['image/png']#image sous forme de str
+                        img = base64.b64decode(img_string) 
+                        img = PIL.Image.open(io.BytesIO(img)) #conversion en image
+                        img_array = np.array(img) #conversion en array
+                        im.append(img_array) #lets go
+    return(im)
