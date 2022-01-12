@@ -154,7 +154,7 @@ class Notebook:
             b777420a
             a23ab5ac
         """
-        return iter(self.cells)
+        return iter(self.cells) # bien défini car self.cells est une liste, elle devient ici un itérateur 
 
 class PyPercentSerializer:
     r"""Prints a given Notebook in py-percent format.
@@ -178,12 +178,40 @@ class PyPercentSerializer:
             # Goodbye! 👋
     """
     def __init__(self, notebook):
-        pass
+        self.notebook = notebook
 
     def to_py_percent(self):
         r"""Converts the notebook to a string in py-percent format.
         """
-        pass
+        nb0 = self.notebook
+        nb = dict() # dictionnaire qui contiendra le futur notebook
+        nb['cells'] = [] # liste qui contiendra les cellules
+
+        for cell in nb0.cells:
+            cell_new = dict() # dictionnaire qui contiendra les cellules
+            if type(cell) == MarkdownCell: # on reconstruit la cellule pas à pas
+                cell_new["cell_type"] = 'markdown'
+                cell_new["id"] = cell.id
+                cell_new['metadata'] = {}
+                cell_new["source"] = cell.source
+
+            else: # idem, mais avec les clés propres aux cellules de code
+                cell_new['cell_type'] = 'code'
+                cell_new["execution_count"] = cell.execution_count
+                cell_new["id"] = cell.id
+                cell_new['metadata'] = {}
+                cell_new['outputs'] = []
+                cell_new["source"] = cell.source
+            nb['cells'].append(cell_new) # on ajoute la cellule construire à la liste de cellules
+
+        nb['metadata'] = {}
+        v = nb0.version
+        v.split('.') # séparation des deux indicateurs de version
+        nb['nbformat'] = int(v[0])
+        nb['nbformat_minor'] = int(v[-1])
+        
+        
+        return(to_percent(nb))
 
     def to_file(self, filename):
         r"""Serializes the notebook to a file
@@ -197,7 +225,9 @@ class PyPercentSerializer:
                 >>> s = PyPercentSerializer(nb)
                 >>> s.to_file("samples/hello-world-serialized-py-percent.py")
         """
-        pass
+        ipynb = self.to_py_percent()
+        save_ipynb(ipynb, filename)
+        
 class Serializer:
     r"""Serializes a Jupyter Notebook to a file.
 
@@ -232,7 +262,7 @@ class Serializer:
     """
 
     def __init__(self, notebook):
-        pass
+        self.notebook = notebook
 
     def serialize(self):
         r"""Serializes the notebook to a JSON object
@@ -240,7 +270,34 @@ class Serializer:
         Returns:
             dict: a dictionary representing the notebook.
         """
-        pass
+        nb0 = self.notebook
+        nb = dict()
+        nb['cells'] = []
+
+        for cell in nb0.cells:
+            cell_new = dict()
+            if type(cell) == MarkdownCell:
+                cell_new["cell_type"] = 'markdown'
+                cell_new["id"] = cell.id
+                cell_new['metadata'] = {}
+                cell_new["source"] = cell.source
+            else:
+                cell_new['cell_type'] = 'code'
+                cell_new["execution_count"] = cell.execution_count
+                cell_new["id"] = cell.id
+                cell_new['metadata'] = {}
+                cell_new['outputs'] = []
+                cell_new["source"] = cell.source
+            nb['cells'].append(cell_new)
+
+        nb['metadata'] = {}
+        v = nb0.version
+        v.split('.')
+        nb['nbformat'] = int(v[0])
+        nb['nbformat_minor'] = int(v[-1])
+        
+
+        return(nb)
 
     def to_file(self, filename):
         r"""Serializes the notebook to a file

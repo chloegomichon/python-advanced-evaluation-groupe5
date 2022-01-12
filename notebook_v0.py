@@ -183,23 +183,19 @@ def to_percent(ipynb):
     """
     cells = get_cells(ipynb)
     L = r""""""
-    for cell in cells:
-        if cell['cell_type'] != 'code' :
-            L = L + f"""# %% [{cell['cell_type']}]
-"""
-            for line in cell['source']:
-                l = ''
-                for elt in line:
-                    l = l+elt
-                L = L + f"""# {l}"""
-        else :
+    for cell in cells: # on va construire en parcourant les cellules
+
+        if cell['cell_type'] != 'code' : # si la cellule n'est pas du code, on indique le type
+            L = L + f"""# %% [{cell['cell_type']}] 
+""" 
+            for line in cell['source']: # on copie le code source ligne par ligne en ajoutant un # au début
+                L = L + f"""# {line}"""
+
+        else : #dans ce cas la cellule est une cellule de code, on n'indique donc pas le type
             L = L + f"""# %% 
 """
-            for line in cell['source']:
-                l = ''
-                for elt in line:
-                    l = l+elt
-                L = L + f"""{l}"""
+            for line in cell['source']: #pas de # cette fois en début de ligne
+                L = L + f"""{line}"""
         L = L + f"""\n"""
     return(L)
         
@@ -263,19 +259,17 @@ def to_starboard(ipynb, html=False):
     
     cells = get_cells(ipynb)
     L = f""""""
-    for cell in cells:
-        if cell['cell_type'] != 'code' :
+    for cell in cells: # on parcoure les cellules
+
+        if cell['cell_type'] != 'code' : 
             L = L + f"""# %% [{cell['cell_type']}]\n"""
         else :
-            L = L + f"""# %% [python]\n"""
+            L = L + f"""# %% [python]\n""" # dans cette version, il faut indiquer python si c'est une cellule de code
         for line in cell['source']:
-            
-            l = ''
-            for elt in line:
-                l = l+elt
-            L = L + f"""{l}"""
+            L = L + f"""{line}"""
         L = L +"""\n"""
-    L = L[:-1]
+        
+    L = L[:-1] # on enlève le dernier passage à la ligne qui est inutile
         
     if html:
         return(starboard_html(repr(L)[1:-1]))
@@ -336,6 +330,7 @@ def clear_outputs(ipynb):
          'nbformat': 4,
          'nbformat_minor': 5}
     """
+    # ne retourne rien mais modifie le notebook en argument
     for cell in get_cells(ipynb):
         if 'outputs' in cell.keys():
             cell['outputs'] = []
@@ -393,16 +388,20 @@ def get_exceptions(ipynb):
     """
     errors = []
     cells = get_cells(ipynb)
+
     for cell in cells:
-        if cell['cell_type'] == 'code':
-            code = cell['source'][0]
+
+        if cell['cell_type'] == 'code': # uniquement pertinent sur les lignes de code
+
+            source = cell['source']
+
+            for line in source:
             
-            try:
-                exec(code)
+                try:
+                    exec(line) # on tente d'éxectuer la ligne de code
                 
-            except BaseException as err:
-                
-                errors.append(err)
+                except BaseException as err: # on cherche les erreurs
+                    errors.append(err)
     return(errors)
 
 
@@ -430,15 +429,18 @@ def get_images(ipynb):
     im = []
     cells = get_cells(ipynb)
     for cell in cells:
-        if 'outputs' in cell.keys():
+
+        if 'outputs' in cell.keys(): # on vérifie qu'il y a des outputs
+
             for output in cell['outputs']:
                 
                 if 'data' in output.keys():
                     
-                    if 'image/png' in output['data'].keys():
-                        img_string = output['data']['image/png']#image sous forme de str
+                    if 'image/png' in output['data'].keys(): # repère une image
+
+                        img_string = output['data']['image/png']# extracton de l'image sous forme de str
                         img = base64.b64decode(img_string) 
-                        img = PIL.Image.open(io.BytesIO(img)) #conversion en image
-                        img_array = np.array(img) #conversion en array
-                        im.append(img_array) #lets go
+                        img = PIL.Image.open(io.BytesIO(img)) # conversion en image
+                        img_array = np.array(img) # conversion en array
+                        im.append(img_array) 
     return(im)
