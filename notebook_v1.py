@@ -7,6 +7,8 @@ an object-oriented version of the notebook toolbox
 from json import load
 from notebook_v0 import *
 
+# définition de deux fonctions perso dont je me sers plus tard
+
 def clean_cells(ipynb):
     '''enlève metadata et outputs, renvoie liste des cells'''
     cells = get_cells(ipynb)
@@ -349,4 +351,32 @@ class Outliner:
         Returns:
             str: a string representing the outline of the notebook.
         """
-        pass
+        code_cell = CodeCell({"cell_type": "code","execution_count": 1,"id": "b777420a",'source': ['print("Hello world!")']}) 
+        #cellule de code utilisée plus tard 
+        
+        r = f"Jupyter notebook v{self.notebook.version}\n" # string dans laquelle on va construire l'objet retourné par la fonction
+        for cell in self.notebook.cells:
+
+            if type(cell)==type(code_cell): # je n'ai pas trouvé comment faire ce test de type de façon plus jolie sans créer une cellule de code plus haut
+                t = 'Code Cell'
+            else :
+                t = 'Markdown Cell'
+            r = r + f"└─▶ {t} #{cell.id}\n"
+            source = cell.source
+            number_lines = len(source) # nombre de lignes de code
+            for k in range(number_lines):
+                current_line = source[k]
+
+                if k ==0 and number_lines !=1 : #première ligne
+                    r = r + f"    ┌  {current_line}"
+                elif k==(number_lines-1) and number_lines !=1:
+                    r = r + f"   └  {current_line} " 
+                else :
+                     r = r + f"    |  {current_line} "
+                if k==(number_lines-1):#dernière ligne
+                    r = r + f"""\n"""
+        
+        return(r)
+
+
+

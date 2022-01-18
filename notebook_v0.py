@@ -265,7 +265,8 @@ def to_starboard(ipynb, html=False):
             L = L + f"""# %% [{cell['cell_type']}]\n"""
         else :
             L = L + f"""# %% [python]\n""" # dans cette version, il faut indiquer python si c'est une cellule de code
-        for line in cell['source']:
+        
+        for line in cell['source']: # pas de # en début de ligne dans cette version
             L = L + f"""{line}"""
         L = L +"""\n"""
         
@@ -331,9 +332,12 @@ def clear_outputs(ipynb):
          'nbformat_minor': 5}
     """
     # ne retourne rien mais modifie le notebook en argument
+
     for cell in get_cells(ipynb):
+
         if 'outputs' in cell.keys():
             cell['outputs'] = []
+
         if 'execution_count' in cell.keys():
             cell['execution_count'] = None
     
@@ -386,7 +390,7 @@ def get_exceptions(ipynb):
         TypeError("unsupported operand type(s) for +: 'int' and 'str'")
         Warning('🌧️  light rain')
     """
-    errors = []
+    errors = [] # liste où l'on mettre les exceptions qu'on va attraper
     cells = get_cells(ipynb)
 
     for cell in cells:

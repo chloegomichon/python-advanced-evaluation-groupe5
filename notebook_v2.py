@@ -5,6 +5,7 @@
 an object-oriented version of the notebook toolbox
 """
 from notebook_v0 import *
+from notebook_v1 import Outliner,Serializer
 
 def clean_cells2(L):
     '''enlève metadata et outputs, renvoie liste des cells'''
