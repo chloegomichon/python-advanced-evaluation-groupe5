@@ -129,7 +129,7 @@ class Notebook:
         r"""Iterate the cells of the notebook.
         """
     
-        return iter(self.cells)
+        return iter(self.cells) # comme précédemment
 
 class NotebookLoader:
     r"""Loads a Jupyter Notebook from a file
@@ -166,7 +166,7 @@ class NotebookLoader:
             else: # analogue avec les cellules Markdown
                 cells_new.append(MarkdownCell(cell['id'],cell['source']))
         
-        return(Notebook(get_format_version(ipynb),cells_new))
+        return(Notebook(get_format_version(ipynb),cells_new)) # conversion du tout en Notebook
 
 class Markdownizer:
     r"""Transforms a notebook to a pure markdown notebook.

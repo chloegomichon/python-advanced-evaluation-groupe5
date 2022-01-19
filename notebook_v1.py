@@ -62,7 +62,7 @@ class CodeCell:
     """
 
     def __init__(self, ipynb):
-        self.id = ipynb["id"]
+        self.id = ipynb["id"] # marche car ipynb est un dictionnaire
         self.source = ipynb['source']
         self.execution_count = ipynb["execution_count"]
 
@@ -142,7 +142,7 @@ class Notebook:
             >>> nb.version
             '4.5'
         """
-        return(Notebook(load_ipynb(filename)))
+        return(Notebook(load_ipynb(filename))) # on charge puis on convertit 
 
     def __iter__(self):
         r"""Iterate the cells of the notebook.
@@ -273,10 +273,10 @@ class Serializer:
             dict: a dictionary representing the notebook.
         """
         nb0 = self.notebook
-        nb = dict()
-        nb['cells'] = []
+        nb = dict() # dictionnaire que l'on va remplir pas à pas
+        nb['cells'] = [] # future liste des cellules
 
-        for cell in nb0.cells:
+        for cell in nb0.cells: # on construit cellule par cellule, en fonction de leur type
             cell_new = dict()
             if type(cell) == MarkdownCell:
                 cell_new["cell_type"] = 'markdown'
@@ -294,7 +294,7 @@ class Serializer:
 
         nb['metadata'] = {}
         v = nb0.version
-        v.split('.')
+        v.split('.') # on sépare la version en ses deux composantes
         nb['nbformat'] = int(v[0])
         nb['nbformat_minor'] = int(v[-1])
         
@@ -362,19 +362,25 @@ class Outliner:
             else :
                 t = 'Markdown Cell'
             r = r + f"└─▶ {t} #{cell.id}\n"
+            
             source = cell.source
             number_lines = len(source) # nombre de lignes de code
-            for k in range(number_lines):
+
+            for k in range(number_lines): # on parcoure ligne par ligne 
                 current_line = source[k]
 
-                if k ==0 and number_lines !=1 : #première ligne
-                    r = r + f"    ┌  {current_line}"
+                if k ==0 and number_lines !=1 : # première ligne dans le cas où il y en a plusieurs
+                    r = r + f"    ┌  {current_line}" # pas besoin de passer à la ligne, le caractère \n est déjà
+                    # dans le code source pour toutes les lignes de la cellule sauf la dernière
+
                 elif k==(number_lines-1) and number_lines !=1:
                     r = r + f"   └  {current_line} " 
-                else :
+
+                else : # ligne intermédiaire ou unique ligne de la cellule
                      r = r + f"    |  {current_line} "
+
                 if k==(number_lines-1):#dernière ligne
-                    r = r + f"""\n"""
+                    r = r + f"""\n""" # cette fois on doit ajouter le passage à la ligne
         
         return(r)
 
